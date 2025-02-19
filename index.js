@@ -313,14 +313,14 @@ console.log(color(`✅ Sukses Connected Bot WhatsApp`,`${randomcolor}`))
 console.log(color(`📝 Thank you for your understanding and cooperation.`))
 await sleep(1000)
 
-Renita.sendMessage('6287782645063@s.whatsapp.net', {
+Renita.sendMessage(`${global.creator}@s.whatsapp.net`, {
 image: {
 url: 'https://files.catbox.moe/rkhxu2.jpg'
 }, 
 caption: 'Thank you for using our script.'
 })
 await sleep(5000)  
-Renita.sendMessage('6287782645063@s.whatsapp.net', {
+Renita.sendMessage(`${global.creator}@s.whatsapp.net`, {
 text: `_*Enjoy Trying Our Script🎁*_`
   })
 }

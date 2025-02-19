@@ -12,12 +12,15 @@ const fetch = require('node-fetch')
 const speed = require('performance-now')
 const moment = require('moment-timezone')
 const { spawn: spawn, exec } = require('child_process')
+const ytdl = require("ytdl-core")
+const yts = require("yt-search")
 const { Primbon } = require('scrape-primbon')
 const primbon = new Primbon()
 const { performance } = require('perf_hooks')
 const path = require('path')
-const ytdl = require("ytdl-core")
 const anon = require('./lib/menfess')
+const { TelegraPH } = require("./scrape/TelegraPH")
+const { remini, jarak, ssweb, tiktok, PlayStore, BukaLapak, pinterest, stickersearch, lirik } = require("./scrape/scraper")
 const canvafy = require('canvafy')
 const jimp = require('jimp')
 const canvas = require('canvas')
@@ -56,7 +59,7 @@ const botNumber = await Renita.decodeJid(Renita.user.id)
 const globalelit = `${global.ownNumb}@s.whatsapp.net`
 const isOwner = globalelit.includes(m.sender)
 const itsMe = m.sender == botNumber ? true : false
-const isCreator = [botNumber, ...global.ownNumb].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
+const isByurr = [botNumber, ...global.ownNumb].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
 //Group
 let groupMetadata = null;
 let groupName = '';
@@ -81,6 +84,42 @@ const isGroupOwner = m.isGroup ? (groupOwner ? groupOwner : groupAdmins).include
 //React
 const moji = ['📚', '💭', '💫', '🌌', '🌏', '〽️', '🌷', '🍁', '🪻', '🗿', '😹']
 const randomemoji = moji[Math.floor(Math.random() * moji.length)]
+const reaction = async (jidss, emoji) => {
+            Renita.sendMessage(jidss, {
+                react: {
+                    text: emoji,
+                    key: m.key 
+                } 
+            })
+        };
+        
+const imageFiles = [
+fs.readFileSync('./media/lookk.jpg'),
+fs.readFileSync('./media/sadd.jpg'),
+fs.readFileSync('./media/reply.jpg'),
+fs.readFileSync('./media/smile.jpg'),
+fs.readFileSync('./media/menu1.jpg'),
+fs.readFileSync('./media/menu2.jpg'),
+fs.readFileSync('./media/menu3.jpg'),
+fs.readFileSync('./media/menu4.jpg'),
+fs.readFileSync('./media/menu5.jpg'),
+fs.readFileSync('./media/menu6.jpg'),
+fs.readFileSync('./media/menu7.jpg'),
+fs.readFileSync('./media/menu8.jpg'),
+fs.readFileSync('./media/menu9.jpg')
+];
+
+const randomMenuImg = imageFiles[Math.floor(Math.random() * imageFiles.length)]
+        
+const audioFiles = [
+  fs.readFileSync('./temporary/media/audio.mp3'),
+  fs.readFileSync('./temporary/media/audio1.mp3'),
+  fs.readFileSync('./temporary/media/audio2.mp3'),
+  fs.readFileSync('./temporary/media/audio3.mp3')
+];
+
+const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
+
 
 //Waktu
 const moment = require('moment-timezone')
@@ -171,7 +210,7 @@ externalAdReply: {
 showAdAttribution: true,
 title: global.namabot, 
 body: `${ucapanWaktu}`, 
-thumbnailUrl: `https://files.catbox.moe/rrv9rt.jpg`, 
+thumbnailUrl: `https://files.catbox.moe/xv3ca3.jpg`, 
 thumbnail: '',
 sourceUrl: 'https://whatsapp.com/channel/0029Vb2yuC8Lo4hXBVm0UD1p', 
 },
@@ -307,6 +346,41 @@ if (
   }
 }
 
+//YTMp3
+const ytmp3 = async (Link) => {
+try {
+await ytdl.getInfo(Link)
+let mp3File = getRandom('.mp3')
+ytdl(Link, {
+filter: 'audioonly'
+}).pipe(fs.createWriteStream(mp3File)).on('finish', async () => {
+await kyami.sendMessage(m.chat, {
+audio: fs.readFileSync(mp3File),
+mimetype: 'audio/mp4'
+}, {
+quoted: m
+})
+})
+} catch (err) {
+reply(`${err}`)
+}
+}
+//Download Mp3
+const downloadMp3 = async (Link ) => {
+try{
+await ytdl.getInfo(Link);
+let mp3File = getRandom('.mp3') 
+ytdl(Link, {filter: 'audioonly'})
+.pipe(fs.createWriteStream(mp3File))
+.on("finish", async () => {  
+await kyami.sendMessage(from, { audio:  fs.readFileSync(mp3File), mimetype: 'audio/mp4' },{ quoted: m })
+fs.unlinkSync(mp3File)
+})       
+} catch (err){
+console.log(color(err))
+}
+}
+
 async function nitaTTDL(videoUrl) {
   try {
     const endpoint = "https://ssstik.io/abc?url=dl";
@@ -439,6 +513,116 @@ async function searchSpotify(query) {
 
 
 switch (command) {
+
+case 'tourlv2': {
+    let q = m.quoted ? m.quoted : m
+    let media = await quoted.download();
+    await reaction(m.chat, "💤")
+    let uploadImage = require('./scrape/uploadImage');
+    let isTele = /image\/(png|jpe?g|gif)|video\/mp4/.test(mime);
+    const uploadFile = require('./scrape/uploadFile')
+    let link = await (isTele ? uploadImage : uploadFile)(media);  
+    Renita.sendMessage(m.chat, {
+        text : `(no expiration date/unknown)\n ${link}`
+    },{quoted:m})
+}
+break
+
+case 'play':{
+if (!q) return m.reply(`🚩 *Contoh:* ${prefix+command} Seventeen JKT48`)
+let yts = require('yt-search')
+let search = await yts(text)
+let anu = search.videos[Math.floor(Math.random() * search.videos.length)]
+let a = `💸Duration : ${anu.timestamp}\n🎉Viewers : ${anu.views}\n`
+await Renita.sendMessage(m.chat, {
+text: a,
+contextInfo: {
+externalAdReply: {
+showAdAttribution: true,
+title: anu.title,
+body: anu.ago,
+thumbnailUrl: anu.image,
+sourceUrl: anu.url,
+mediaType: 1,
+renderLargerThumbnail: true
+}
+}
+}, {
+quoted: m
+})
+if (anu.seconds < 1000) {
+await ytmp3(anu.url)
+} else m.reply('durasi nya bro ke besaran')
+}
+break
+
+case 'tourl': {
+  m.reply(mess.wait)
+  if (!/video/.test(mime) && !/image/.test(mime))
+    m.reply(`*Send/Reply the Video/Image With Caption* ${prefix + command}`)
+  if (!quoted)
+    m.reply(`*Send/Reply the Video/Image Caption* ${prefix + command}`)
+  let { UploadFileUgu, webp2mp4File, TelegraPh } = require('./scrape/uploader')
+  let media = await Renita.downloadAndSaveMediaMessage(quoted)
+  if (/image/.test(mime)) {
+    let anu = await TelegraPh(media)
+    m.reply(util.format(anu))
+    m.reply('urlnya: ' + anu.url)
+  } else if (!/image/.test(mime)) {
+    let anu = await UploadFileUgu(media)
+    m.reply(util.format(anu))
+    m.reply('noh: ' + anu.url)
+  }
+  await fs.unlinkSync(media)
+}
+break
+
+case 'toimage': case 'toimg': {
+m.reply(mess.wait)
+if (!quoted) throw 'Reply Image'
+if (!/webp/.test(mime)) m.reply(`Balas sticker dengan caption *${prefix + command}*`)
+let media = await Renita.downloadAndSaveMediaMessage(quoted)
+let ran = await getRandom('.png')
+exec(`ffmpeg -i ${media} ${ran}`, (err) => {
+fs.unlinkSync(media)
+if (err) throw err
+let buffer = fs.readFileSync(ran)
+Renita.sendMessage(from, { image: buffer }, {quoted:m})
+fs.unlinkSync(ran)
+})
+}
+break
+
+
+case 'backup':
+ {
+ if (!isOwner) return m.reply(mess.owner)
+ await m.reply("Sabar Mas Lagi Backup!!!");
+ const { execSync } = require("child_process");
+ const ls = (await execSync("ls"))
+ .toString()
+ .split("\n")
+ .filter(
+ (pe) =>
+ pe != "node_modules" &&
+ pe != "package-lock.json" &&
+ pe != "yarn.lock" &&
+ pe != ""
+ );
+ const exec = await execSync(`zip -r Renita.zip ${ls.join(" ")}`);
+ await Renita.sendMessage(
+ m.chat,
+ {
+ document: await fs.readFileSync("./Renita.zip"),
+ mimetype: "application/zip",
+ fileName: "Renita.zip",
+ },
+ { quoted: m }
+ );
+ await execSync("rm -rf Renita.zip");
+ }
+ break
+
 case "menu": case"help": {
 
 Renita.sendMessage(m.chat, { react: { text: `${randomemoji}`, key: m.key }})
@@ -515,7 +699,7 @@ let msg = await Renita.sendMessage(m.chat,
     quoted : ftroli
   }
 )
-**/
+
 Renita.sendMessage(m.chat, {
         document: { url: "https://wa.me/62882006233840" },
         fileName: global.botname2,
@@ -545,7 +729,9 @@ Renita.sendMessage(m.chat, {
     }, {
         quoted: m
     })
-await Renita.sendMessage(m.chat, { audio: fs.readFileSync("./temporary/media/audio.mp3"), mimetype: 'audio/mp4', ptt: true }, { quoted: ftroli });
+    **/
+    Renita.sendMessage(m.chat, { image: randomMenuImg, caption: mbut }, { quoted: ftroli })
+await Renita.sendMessage(m.chat, { audio: randomAudio, mimetype: 'audio/mp4', ptt: true }, { quoted: ftroli });
 }
 break
 
@@ -1169,7 +1355,7 @@ let captionvid = `∘ Title: ${result.title}\n∘ Artist: ${result.artis}\n∘ T
 break
 
 case 'upsw': {
-  if (!isOwner) return reply(mess.owner)
+  if (!isByurr) return reply(mess.owner)
     const quoted = m.quoted ? m.quoted : null;
 
     if (!quoted && text) {
@@ -1244,8 +1430,8 @@ break
 
 case 'tiktok':
 case 'tt': {
-  if (!text) return replynano(`Contoh: ${prefix + command} link`);
-HinaChan.sendMessage(m.chat, { react: { text: `⏱️`, key: m.key }})
+  if (!text) return m.reply(`Contoh: ${prefix + command} link`);
+Renita.sendMessage(m.chat, { react: { text: `⏱️`, key: m.key }})
 try {
   const data = await fetchJson(`https://api.tiklydown.eu.org/api/download?url=${encodeURIComponent(text)}`);
     const vidnya = data?.video?.noWatermark;
@@ -1260,14 +1446,14 @@ try {
 *Title*: _${data.title ?? 'Tidak diketahui'}_
 
 \`⏤͟͟͞͞ Downloader By ${botname}\``;
-      await HinaChan.sendMessage(
+      await Renita.sendMessage(
         m.chat, 
         { caption, video: { url: vidnya } }, 
         { quoted: m }
       );
     } else {
       const nyut = await nitaTTDL(text);
-      await HinaChan.sendMessage(
+      await Renita.sendMessage(
         m.chat, 
         {
           caption: `Judul: ${nyut.title ?? 'Tidak diketahui'}\nDeskripsi: ${nyut.description ?? 'Tidak diketahui'}`,
@@ -1283,11 +1469,116 @@ try {
 }
 break;
 
+case 'tiktokcp':
+case 'ttcp': {
+  if (!text) return m.reply(`Contoh: ${prefix + command} link`);
+Renita.sendMessage(m.chat, { react: { text: `⏱️`, key: m.key }})
+try {
+  const data = await fetchJson(`https://api.tiklydown.eu.org/api/download?url=${encodeURIComponent(text)}`);
+    const vidnya = data?.video?.noWatermark;
+    if (vidnya) {
+      const caption = `*[ TIKTOK DOWNLOADER ]*
+*Video dari*: _${data.author?.name ?? 'Tidak diketahui'} (@${data.author?.unique_id ?? 'Tidak diketahui'})_
+*Likes*: _${data.stats?.likeCount ?? 'Tidak diketahui'}_
+*Comments*: _${data.stats?.commentCount ?? 'Tidak diketahui'}_
+*Shares*: _${data.stats?.shareCount ?? 'Tidak diketahui'}_
+*Plays*: _${data.stats?.playCount ?? 'Tidak diketahui'}_
+*Saves*: _${data.stats?.saveCount ?? 'Tidak diketahui'}_
+*Title*: _${data.title ?? 'Tidak diketahui'}_
+
+\`⏤͟͟͞͞ Downloader By ${botname}\``;
+      await Renita.sendMessage(
+        m.chat, 
+        { video: { url: vidnya } }, 
+        { quoted: m }
+      );
+    } else {
+      const nyut = await nitaTTDL(text);
+      await Renita.sendMessage(
+        m.chat, 
+        {
+          video: { url: nyut.downloadLink || nyut.hdDownloadLink },
+        },
+        { quoted: m }
+      );
+    }
+  } catch (error) {
+    console.error(error);
+    reply('Maaf, terjadi kesalahan saat memproses permintaan Anda.');
+ }
+}
+break;
+
+case 'update': {
+  if (!isCreator) return reply(mess.owner);
+
+  const defaultIndexUrl = 'https://raw.githubusercontent.com/latesturl/RaolProjects/refs/heads/master/index.js';
+  const defaultCaseUrl = 'https://raw.githubusercontent.com/latesturl/RaolProjects/refs/heads/master/case.js';
+
+  if (!args[0]) {
+    try {
+      const localIndexTimestamp = await getFileTimestamp('./index.js');
+      const localCaseTimestamp = await getFileTimestamp('./case.js');
+
+      const remoteIndexResponse = await axios.head(defaultIndexUrl);
+      const remoteCaseResponse = await axios.head(defaultCaseUrl);
+
+      const remoteIndexTime = new Date(remoteIndexResponse.headers['last-modified']).getTime();
+      const remoteCaseTime = new Date(remoteCaseResponse.headers['last-modified']).getTime();
+
+      if (localIndexTimestamp >= remoteIndexTime && localCaseTimestamp >= remoteCaseTime) {
+        return reply('All files are already up-to-date.');
+      }
+
+      await downloadFile(defaultIndexUrl, './index.js');
+      await downloadFile(defaultCaseUrl, './case.js');
+      reply('Successfully updated all files! Restarting...');
+      await sleep(3000);
+      process.exit(0);
+    } catch (error) {
+      reply('Failed to update default: ' + error.message);
+    }
+    break;
+  }
+
+  const inputUrl = args[0];
+  
+  if (!isValidUrl(inputUrl)) {
+    return reply('Invalid URL format! Example: https://example.com/index.js');
+  }
+
+  const targetFile = inputUrl.includes('index.js') ? 'index.js' : 
+                    inputUrl.includes('case.js') ? 'case.js' : 
+                    null;
+
+  if (!targetFile) {
+    return reply('URL must point to index.js or case.js!');
+  }
+
+  try {
+    const localTime = await getFileTimestamp(`./${targetFile}`);
+    const remoteResponse = await axios.head(inputUrl);
+    const remoteTime = new Date(remoteResponse.headers['last-modified']).getTime();
+
+    if (localTime >= remoteTime) {
+      return reply(`File ${targetFile} is already the latest version.`);
+    }
+
+    await downloadFile(inputUrl, `./${targetFile}`);
+    reply(`Successfully updated ${targetFile}! Restarting...`);
+    await sleep(3000);
+    process.exit(0);
+  } catch (error) {
+    reply(`Failed to update ${targetFile}: ` + error.message);
+  }
+  }
+  break
+
 case 'ttv2': case 'tiktokv2': case 'tiktokdlv2': {
     if (!text) return reply(`\n*ex:* ${prefix + command} https://vt.tiktok.com/ZS6ThFced/\n`)
     
     let res = await tiktok(text)
-    await reaction(m.chat, "⚡")
+    await Renita.sendMessage(m.chat, { react: { text: `${randomemoji}`, key: m.key }})
 
     if (res && res.data && res.data.success) {
         let data = res.data
@@ -1636,7 +1927,7 @@ m.reply(`Successfully created file ${fileName} and add content.`);
 break
 
 case 'trash': {
-let directoryPath = './'
+let directoryPath = './session'
 fs.readdir(directoryPath, async (err, files) => {
 if (err) {
 console.error('Unable to scan directory: ', err);
@@ -1740,7 +2031,7 @@ return reply(result.message);
 break;
 
 case 'public': {
-if (!isCreator) return reply('*owner only*') 
+if (!isByurr) return reply('*owner only*') 
 Renita.sendMessage(m.chat, { react: { text: `${randomemoji}`, key: m.key }})
 Renita.public = true
 reply('succes')
@@ -1794,7 +2085,7 @@ reply(`Function '${functionName}' not found.`);
 break
 
 case 'self': {
-if (!isCreator) return reply('*owner only*') 
+if (!isByurr) return reply('*owner only*') 
 Renita.sendMessage(m.chat, { react: { text: `${randomemoji}`, key: m.key }})
 Renita.public = false
 reply('succes')
@@ -1833,7 +2124,7 @@ await Renita.relayMessage( msg.key.remoteJid,msg.message,{ messageId: msg.key.id
 break
 
 case 'upchv1': {
-if (!isCreator) return reply(mess.owner)
+if (!isByurr) return reply(mess.owner)
         		try {
 					ppuser = await Renita.profilePictureUrl(m.sender, 'image');
 				} catch (err) {
@@ -2087,7 +2378,7 @@ case 'upchv2': {
 }
 
 case "swgc": {
-    if (!isCreator) return reply(mess.owner);
+    if (!isByurr) return reply(mess.owner);
     if (!text && !quoted) return reply("Enter text for status or reply to image/video/audio with caption.");
 
     let media = null;
@@ -2162,7 +2453,7 @@ case "swgc": {
 break;
 //===============================================//
 case 'restart': {
-if (!isCreator) return reply(mess.owner)
+if (!isByurr) return reply(mess.owner)
 reply(`Restarting will be completed in seconds`)
 await sleep(3000)
 process.exit()
@@ -2172,7 +2463,7 @@ break
 default:
 
 if (budy.startsWith('=>')) {
-if (!isCreator) return reply(mess.owner)
+if (!isByurr) return reply(mess.owner)
 
 function Return(sul) {
 sat = JSON.stringify(sul, null, 2)
@@ -2190,7 +2481,7 @@ reply(String(e))
 }
 
 if (budy.startsWith('>')) {
-if (!isCreator) return
+if (!isByurr) return
 try {
 let evaled = await eval(budy.slice(2))
 if (typeof evaled !== 'string') evaled = require('util').inspect(evaled)
