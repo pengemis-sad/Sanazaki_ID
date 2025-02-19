@@ -4,6 +4,7 @@ smsg, getGroupAdmins, formatp, tanggal, formatDate, getTime, isUrl, await, sleep
 } = require('./lib/myfunction')
 const { formatSize } = require('./lib/myfunctionn');
 const { makeWASocket, downloadContentFromMessage, emitGroupParticipantsUpdate, emitGroupUpdate, generateWAMessageContent, generateWAMessage, makeInMemoryStore, prepareWAMessageMedia, generateWAMessageFromContent, MediaType, areJidsSameUser, WAMessageStatus, downloadAndSaveMediaMessage, AuthenticationState, GroupMetadata, initInMemoryKeyStore, getContentType, MiscMessageGenerationOptions, useSingleFileAuthState, BufferJSON, WAMessageProto, MessageOptions, WAFlag, WANode, WAMetric, ChatModification, MessageTypeProto, WALocationMessage, ReRaol404ectMode, WAContextInfo, proto, WAGroupMetadata, ProxyAgent, waChatKey, MimetypeMap, MediaPathMap, WAContactMessage, WAContactsArrayMessage, WAGroupInviteMessage, WATextMessage, WAMessageContent, WAMessage, BaileysError, WA_MESSAGE_STATUS_TYPE, MediaConnInfo, URL_REGEX, WAUrlInfo, WA_DEFAULT_EPHEMERAL, WAMediaUpload, mentionedJid, processTime, Browser, MessageType, Presence, WA_MESSAGE_STUB_TYPES, Mimetype, relayWAMessage, Browsers, GroupSettingChange, DisRaol404ectReason, WASocket, getStream, WAProto, isBaileys, AnyMessageContent, fetchLatestBaileysVersion, useMultiFileAuthState, templateMessage } = require('@whiskeysockets/baileys')
+const AdmZip = require('adm-zip')
 const axios = require('axios')
 const os = require('os')
 const fs = require('fs')
@@ -513,6 +514,130 @@ async function searchSpotify(query) {
 
 
 switch (command) {
+
+case 'ttl': case 'ttlengkap': case 'tiktokl': case 'tiktoklengkap': case 'tiktoklngkp': case 'ttlngkp': {
+//ambil module
+const { dapatkanVideo, downloadFile } = require('./scrape/tiktokfull');
+
+//code nyah
+    if (!text) return Renita.sendMessage(m.chat, {
+        text: "Masukkan URL TikTok beserta opsi (--video, --image, --sound, --mvideo, --mimage, --msound)."
+    }, {
+        quoted: m
+    });
+
+    let zan1 = text.split(" ");
+    let zan2 = zan1.filter(arg => arg.startsWith("http"));
+    let zan3 = zan1.find(arg => arg.startsWith("--"));
+    let zan4 = zan1.includes("//zip");
+
+    if (!zan2.length) return Renita.sendMessage(m.chat, {
+        text: "Tidak ada URL TikTok yang valid."
+    }, {
+        quoted: m
+    });
+    if (!zan3) return Renita.sendMessage(m.chat, {
+        text: "Pilih opsi: --video, --image, --sound, --mvideo, --mimage, --msound."
+    }, {
+        quoted: m
+    });
+
+    let multi = zan3.startsWith("--m");
+    let includeVideo = zan3.includes("video");
+    let includeAudio = zan3.includes("sound");
+    let includeImage = zan3.includes("image");
+
+    await Renita.sendMessage(m.chat, {
+        react: {
+            text: "🖨️",
+            key: m.key
+        }
+    });
+
+    let zip = new AdmZip();
+    let tempDir = path.join(process.cwd(), "tiktok_downloads");
+    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
+
+    for (let [index, url] of zan2.entries()) {
+        let result = await dapatkanVideo(url);
+        if (!result) continue;
+
+        let folderName = `tiktok_${index + 1}`;
+        let folderPath = path.join(tempDir, folderName);
+        fs.mkdirSync(folderPath, {
+            recursive: true
+        });
+
+        if (includeImage && result.images.length) {
+            for (let [i, img] of result.images.entries()) {
+                let imgPath = path.join(folderPath, `image_${i + 1}.jpg`);
+                await downloadFile(img, imgPath);
+                if (!zan4) await Renita.sendMessage(m.chat, {
+                    image: {
+                        url: img
+                    },
+                    caption: "Gambar TikTok"
+                }, {
+                    quoted: m
+                });
+            }
+        }
+        if (includeAudio && result.audio.length) {
+            let audioPath = path.join(folderPath, "audio.mp3");
+            await downloadFile(result.audio[0].link, audioPath);
+            if (!zan4) await Renita.sendMessage(m.chat, {
+                audio: {
+                    url: result.audio[0].link
+                },
+                mimetype: "audio/mp4",
+                ptt: false
+            }, {
+                quoted: m
+            });
+        }
+        if (includeVideo && result.video.length) {
+            let videoPath = path.join(folderPath, "video.mp4");
+            await downloadFile(result.video[0].link, videoPath);
+            if (!zan4) await Renita.sendMessage(m.chat, {
+                video: {
+                    url: result.video[0].link
+                },
+                caption: "Video TikTok"
+            }, {
+                quoted: m
+            });
+        }
+
+        zip.addLocalFolder(folderPath, folderName);
+    }
+
+    if (zan4) {
+        let zipName = `done by xyzanBot.zip`;
+        let zipPath = path.join(tempDir, zipName);
+        zip.writeZip(zipPath);
+
+        await Renita.sendMessage(m.chat, {
+            document: fs.readFileSync(zipPath),
+            mimetype: "application/zip",
+            fileName: zipName
+        }, {
+            quoted: m
+        });
+
+        fs.rmSync(tempDir, {
+            recursive: true,
+            force: true
+        });
+    }
+
+    await Renita.sendMessage(m.chat, {
+        react: {
+            text: "📃",
+            key: m.key
+        }
+    });
+};
+break
 
 case 'tourlv2': {
     let q = m.quoted ? m.quoted : m
